@@ -117,4 +117,14 @@ def markdown_to_blocks(markdown: str) -> list[str]:
         if len(block) > 0:
             result.append(block)
     return result
+
+def parse_title_text(markdown: str) -> str:
+    lines = markdown.split("\n")
+    for line in lines:
+        if line.startswith("# "):
+            text = line.replace("#", "").strip()
+            if len(text) > 0:
+                return text
+    raise ValueError("No title found in markdown")
+
     

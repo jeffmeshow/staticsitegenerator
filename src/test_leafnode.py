@@ -22,7 +22,7 @@ class TestHTMLNode(unittest.TestCase):
 
     def test_no_tag(self):
         node = LeafNode(tag=None, value="This is just raw text.")
-        #print (node.to_html())
+
         assert node.to_html() == 'This is just raw text.'
 
     def test_no_value(self):

@@ -41,55 +41,43 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
         child_node: HTMLNode
         if blocktype == BlockType.PARAGRAPH:
             block = block.replace("\n", " ") #remove new lines for para blocks
-            block = block.replace("  ", " ") #remove new lines for para blocks
-            children: list[HTMLNode] = text_to_children(block)
-            if len(children) > 0:
-                para_node = ParentNode("p", children)
-                html.children.append(para_node)
-            else:
-                para_node = LeafNode("p", block)
-                html.children.append(para_node)
+            block = block.replace("  ", " ") #replace double spaces with one
+            html.children.append(make_parent_or_leaf("p", block))
         elif blocktype == BlockType.CODE:
             code_node= LeafNode("code", block.split("```")[1].lstrip())
             pre_node = ParentNode("pre", [code_node])
             html.children.append(pre_node)
         elif blocktype == BlockType.QUOTE:
             text = block.split(">")[1].lstrip()
-            children: list[HTMLNode] = text_to_children(text)
-            if len(children) > 0:
-                quote_node = ParentNode("quote", children)
-                html.children.append(quote_node)
-            else:
-                quote_node = LeafNode("quote", text)
-                html.children.append(quote_node)
+            html.children.append(make_parent_or_leaf("blockquote", text))
         elif blocktype == BlockType.ORDERED_LIST:
             list_node = ParentNode("ol", [])
             lines = block.split("\n")
             for line in lines:
                 dot_index = line.index(".")
                 text = line[dot_index + 2:]
-                children = text_to_children(text)
-                if len(children) > 0:
-                    item_node = ParentNode("li", children)
-                else:
-                    item_node = LeafNode("li", text)
-                list_node.children.append(item_node)
+                list_node.children.append(make_parent_or_leaf("li", text))
             html.children.append(list_node)
         elif blocktype == BlockType.UNORDERED_LIST:
             list_node = ParentNode("ul", [])
             lines = block.split("\n")
             for line in lines:
                 text = line[2:]
-                children = text_to_children(text)
-                if len(children) > 0:
-                    item_node = ParentNode("li", children)
-                else:
-                    item_node = LeafNode("li", text)
-                list_node.children.append(item_node)
+                list_node.children.append(make_parent_or_leaf("li", text))
             html.children.append(list_node)
+        elif blocktype == BlockType.HEADING:
+            header_node = header_block_to_node(block)
+            html.children.append(header_node)
 
     return html
 
+def make_parent_or_leaf(tag: str, text: str)->HTMLNode:
+    children: list[HTMLNode] = text_to_children(text)
+    if len(children) > 0:
+        return ParentNode(tag, children)
+    else:
+        return LeafNode(tag, text)
+        
 
 def text_to_children(text: str)-> list[HTMLNode]:
     html_nodes: list[HTMLNode] = []
@@ -99,4 +87,14 @@ def text_to_children(text: str)-> list[HTMLNode]:
         html_nodes.append(text_node_to_html_node(text_node))
     
     return html_nodes
+
+def header_block_to_node(markdown: str) -> LeafNode:
+    count = markdown.count("#")
+    if count >= 1 and count <= 6:
+        text = markdown.replace("#", "").strip()
+        if len(text) > 0:
+            return LeafNode("h" + str(count), text)
+    raise ValueError(f"Invalid header: {markdown}")
+
+        
 

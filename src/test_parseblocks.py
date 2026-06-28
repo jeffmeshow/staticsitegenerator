@@ -1,6 +1,7 @@
 import unittest
-from parseblocks import block_to_block_type, markdown_to_html_node, BlockType
+from parseblocks import block_to_block_type, markdown_to_html_node, header_block_to_node, BlockType
 from textnode import TextNode, TextType
+from leafnode import LeafNode
 
 class TestParseBlock(unittest.TestCase):
     def test_heading(self):
@@ -75,6 +76,20 @@ the **same** even with inline stuff
             "<div><ol><li>Item 1</li><li>Item 2</li><li>Item 3</li></ol></div>",
         )
 
+    def test_unorderedlist(self):
+        md = """
+- Item 1
+- Item 2
+- Item 3
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul></div>",
+        )
+
     def test_orderedlistformatted(self):
         md = """
 1. Item **1**
@@ -89,5 +104,29 @@ the **same** even with inline stuff
             "<div><ol><li>Item <b>1</b></li><li>Item <b>2</b></li><li>Item <b>3</b></li></ol></div>",
         )
 
+    def test_parseheaderblockh1(self):
+        block = "# Header Text"
+        node = LeafNode("h1", "Header Text")
+        generated_node = header_block_to_node(block)
+        self.assertEqual(generated_node.to_html(), node.to_html())
+
+
+    def test_parseheaderblockh4(self):
+            block = "#### Header 4 Text"
+            node = LeafNode("h4", "Header 4 Text")
+            generated_node = header_block_to_node(block)
+            self.assertEqual(generated_node.to_html(), node.to_html())
+
+    def test_parseheaderexception1(self):
+        with self.assertRaises(ValueError) as context:
+            block = "####"
+            generated_node = header_block_to_node(block)
+
+    def test_parseheaderexception2(self):
+        with self.assertRaises(ValueError) as context:
+            block = "Header Text"
+            generated_node = header_block_to_node(block)
+
 if __name__ == "__main__":
     unittest.main()
+
