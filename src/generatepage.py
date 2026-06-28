@@ -17,7 +17,7 @@ def get_files_r(abs_directory: str, files: list[str]) -> list[str]:
     return files
 
 
-def generate_pages(from_dir: str, template_path: str):
+def generate_pages(from_dir: str, template_path: str, basepath: str):
     pages: list[(str, str)] = []
     from_files: list[str] = []
     working_abs_directory = os.path.abspath(".")    
@@ -29,10 +29,10 @@ def generate_pages(from_dir: str, template_path: str):
     for file in from_files:
         from_path = file.replace(from_abs_directory + "/", "")
         dest_path = from_path.replace(".md", ".html")
-        generate_page(from_path, template_path, dest_path)
+        generate_page(from_path, template_path, dest_path, basepath)
 
 
-def generate_page(from_path: str, template_path: str, dest_path:str):
+def generate_page(from_path: str, template_path: str, dest_path:str, basepath: str):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     page = get_file_content(CONTENT_DIR, from_path)
@@ -43,6 +43,8 @@ def generate_page(from_path: str, template_path: str, dest_path:str):
 
     content = template.replace("{{ Title }}", title)
     content = content.replace("{{ Content }}", html)
+    content = content.replace('href="/', f"href={basepath}")
+    content = content.replace('src="/', f"src={basepath}")
     
     write_file(PUBLIC_DIR, dest_path, content)
 
